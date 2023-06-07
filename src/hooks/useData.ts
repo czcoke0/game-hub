@@ -1,4 +1,4 @@
-import { CanceledError } from "axios";
+import { AxiosRequestConfig, CanceledError } from "axios";
 import { useState, useEffect } from "react";
 import apiClient from "../services/api-client";
 
@@ -6,7 +6,7 @@ interface FetchGenreResponse<T> {
     count: number;
     results: T[];
   }
-const useData=<T>(endpoint:string)=>{//t is generic type parameter name
+const useData=<T>(endpoint:string, requestConfig?:AxiosRequestConfig, deps?:any[])=>{//t is generic type parameter name
     const [data, setData] = useState<T[]>([]);
     const [error, setError] = useState("");
     //loading skeleton
@@ -17,7 +17,7 @@ const useData=<T>(endpoint:string)=>{//t is generic type parameter name
       //loading
       setLoading(true)
       apiClient
-        .get<FetchResponse<T>>(endpoint,{signal:controller.signal})
+        .get<FetchResponse<T>>(endpoint,{signal:controller.signal, ...requestConfig})
         .then((res) => {setData(res.data.results);setLoading(false)})
         .catch((err) => 
         {
@@ -26,7 +26,7 @@ const useData=<T>(endpoint:string)=>{//t is generic type parameter name
             setLoading(false)
           });
         return()=> controller.abort()
-    },[]);
+    },deps?[...deps]:[]);
     return {data, error, isLoading}
 }
 
